@@ -1,21 +1,28 @@
+blackListedWords = ["I", "I\'ll", "YOU\'LL", "You\'ll", "Your", "YOUR", "ON", "Of", "OF", "Hihi", "HIHI"
+					"And", "AND","and", "BUT", "but", "But" "Will", "WILL", "Or", "OR", "HAHA", "Haha",
+					"Hehe", "HEHE", "This", "THIS", "That", "THAT", "He", "She", "HE", "SHE", "It", "IT",
+					"Ako", "AKO", "Ikaw", "IKAW", "Si", "SI", "Siya", "SIYA", "Kayo", "KAYO", "Sila", "Sila"]
 
-redListedWords = ["I", "I\'ll", "YOU\'LL", "You\'ll", "ON", "Of", "OF", "And", 
-					"AND", "Will", "WILL", "Or", "OR", "This", "THIS", "That",
-					"THAT"]
+
 
 #returns the initial names of the people
 def getInitialNames(dataList):
 	names = []
-	rule = ['vote', 'iboto']
+	voteRule = ['vote', 'VOTE', 'Vote']
+	botoRule = ['boto', 'BOTO']
 	tempName = ""
 	for tweet in dataList:	#iterates through all tweets
-		tempName = finderAlgo(rule[0], tweet[2])
-		if tempName != "":
-			names.append(tempName)
-		else:
-			tempName = finderAlgo(rule[1], tweet[2])
+		for rule in voteRule:
+			tempName = finderAlgo(rule, tweet[2])
 			if tempName != "":
 				names.append(tempName)
+				break
+		tempName = ""
+		for rule in botoRule:
+			tempName = finderAlgo(rule, tweet[2])
+			if tempName != "":
+				names.append(tempName)
+				break
 	return names
 
 #algorithm for finding the names
@@ -27,8 +34,8 @@ def finderAlgo(toFind, message):
 			if token.find(toFind) != -1 and tokenized.index(token) < len(tokenized):
 				index = tokenized.index(token)
 				name = searchNearProper(index, tokenized, 4, 'r')
-				if name == "":
-					name = searchNearProper(index, tokenized, 4, 'l')
+			#	if name == "":
+			#		name = searchNearProper(index, tokenized, 4, 'l')
 	return name
 
 # index refers to index in list of tokens
@@ -46,7 +53,7 @@ def searchNearProper(index, tokenList, movement, direction):  #adds gets words t
 		while mover < len(tokenList) and found < numNames and moves > 0:
 			if len(tokenList[mover]) > 0: #gets first letter and checks if it is capital
 				firstLetter = "" + tokenList[mover][0] 
-				if firstLetter.isupper() == True:
+				if firstLetter.isupper() == True and ifBlackListed(tokenList[mover], blackListedWords) == False:
 					if found > 0:
 						name += " "
 					name += removeSpecialCharacters(tokenList[mover]) 
@@ -66,7 +73,20 @@ def searchNearProper(index, tokenList, movement, direction):  #adds gets words t
 			moves -= 1
 			mover -= 1
 	return name
+	
 
+
+#checks if word can be found in blackList
+def ifBlackListed(word, blackList):
+	for eachWord in blackList:
+		if eachWord == word:
+			return True
+			break
+	return False
+
+
+
+#removes special characters from name list
 def removeSpecialCharacters(word):
 	newWord = word
 	if newWord.find(",") != -1:
@@ -77,4 +97,31 @@ def removeSpecialCharacters(word):
 		newWord= newWord.replace("!", "")
 	if word.find("?") != -1:
 		newWord= newWord.replace("?", "")
+	if word.find("\"") != -1:
+		newWord= newWord.replace("\"", "")
+	if word.find("\'") != -1:
+		newWord= newWord.replace("\'", "")
+	if word.find("@") != -1:
+		newWord= newWord.replace("@", "")
+	if word.find("#") != -1:
+		newWord= newWord.replace("#", "")
+	if word.find("(") != -1:
+		newWord= newWord.replace("(", "")
+	if word.find(")") != -1:
+		newWord= newWord.replace(")", "")
 	return newWord
+	
+	
+#filters out all wods that are 
+def filterEnglishWords(nameList, dictionary):
+	filteredNames = []
+	for name in nameList:
+		found = False
+		loweredName = name.lower()
+		for word in dictionary:
+			if loweredName == word:
+				found = True
+		#print(loweredName + " = " +str(found))
+		if found == False:
+			filteredNames.append(name)
+	return filteredNames

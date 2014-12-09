@@ -33,10 +33,6 @@ def getDataFromCSV(filename):
 				break
 
 	return filteredData
-	
-    
 
-tweetData = []
-tweetData = getDataFromCSV(filename)
 #nameList = getInitialNames(tweetData[0])
 #print(nameList)
